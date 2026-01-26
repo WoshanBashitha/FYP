@@ -1,0 +1,2 @@
+git commit --amend --author="WoshanBashitha <woshan7777@gmail.com>"
+git rebase --continue
