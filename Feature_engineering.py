@@ -40,13 +40,3 @@ def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
     data.dropna(inplace=True)
 
     return data
-
-# import os
-# import pandas as pd
-
-# def process_and_save(df: pd.DataFrame, filename: str) -> pd.DataFrame:
-#     os.makedirs("feature_datasets", exist_ok=True)   # create folder if not exists
-#     processed = calculate_features(df)
-#     full_path = os.path.join("feature_datasets", filename)  # full path
-#     processed.to_csv(full_path)
-#     return processed
