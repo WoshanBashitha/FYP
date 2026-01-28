@@ -45,16 +45,8 @@ import os
 import pandas as pd
 
 def process_and_save(df: pd.DataFrame, filename: str) -> pd.DataFrame:
-    """Calculate features and save the DataFrame to CSV in feature_datasets folder."""
-    
-    # Ensure the folder exists
-    os.makedirs("feature_datasets", exist_ok=True)
-    
-    # Calculate features
+    os.makedirs("feature_datasets", exist_ok=True)   # create folder if not exists
     processed = calculate_features(df)
-    
-    # Full path to save
-    full_path = os.path.join("feature_datasets", filename)
+    full_path = os.path.join("feature_datasets", filename)  # full path
     processed.to_csv(full_path)
-    
     return processed
