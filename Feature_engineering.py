@@ -1,21 +1,12 @@
 import pandas as pd
 import numpy as np
 
-# Put all crypto dataframes in one place
-crypto_dfs = {
-    "BTC": btc,
-    "ETH": eth,
-    "BNB": bnb,
-    "SOL": sol,
-    "XRP": xrp
-}
+def apply_feature_engineering(df, save_name=None):
+    # Feature parameters
+    LAGS = [1, 7, 14, 30, 90, 180]
+    MAS = [7, 21, 60, 180]
+    TARGET_RETURNS = [7, 30, 365]
 
-# Feature parameters
-LAGS = [1, 7, 14, 30, 90, 180]
-MAS = [7, 21, 60, 180]
-TARGET_RETURNS = [7, 30, 365]
-
-for name, df in crypto_dfs.items():
 
     # ---------- Price-based features ----------
     
