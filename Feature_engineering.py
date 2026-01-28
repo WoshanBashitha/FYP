@@ -42,6 +42,7 @@ def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
     return data
 
 import os
+import pandas as pd
 
 def process_and_save(df: pd.DataFrame, filename: str) -> pd.DataFrame:
     """Calculate features and save the DataFrame to CSV in feature_datasets folder."""
