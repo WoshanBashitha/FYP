@@ -1,6 +1,9 @@
-pandas==3.0.1
-torch==2.10.0
+streamlit
+pandas
+torch
 scikit-learn
 optuna
 numpy
 matplotlib
+yfinance
+plotly
