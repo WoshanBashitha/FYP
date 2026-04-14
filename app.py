@@ -623,7 +623,7 @@ def generate_ai_report(prompt: str) -> str:
                 return ""
 
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(
             f"You are a concise financial analyst. {prompt} "
             "Write a clear, informative paragraph of 80–150 words. "
