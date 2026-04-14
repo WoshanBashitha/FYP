@@ -204,12 +204,35 @@ COINS = {
 }
 
 FEATURE_COLS = [
-    "Daily_Return", "Close_Lag_1", "Close_Lag_7", "Close_Lag_14",
-    "Close_Lag_30", "Close_Lag_90", "Close_Lag_180",
-    "MA_7", "MA_21", "MA_60", "MA_180",
-    "Volatility_7", "Volatility_21", "Volatility_60", "Volatility_180",
-    "HL_Spread", "Volume_MA_7", "Volume_MA_21", "Volume_MA_60", "Volume_MA_180",
+    "High",
+    "Low",
+    "Open",
+    "Volume",
+    "Daily_Return",
+    "Close_Lag_1",
+    "Close_Lag_7",
+    "Close_Lag_14",
+    "Close_Lag_30",
+    "Close_Lag_90",
+    "Close_Lag_180",
+    "MA_7",
+    "MA_21",
+    "MA_60",
+    "MA_180",
+    "Volatility_7",
+    "Volatility_21",
+    "Volatility_60",
+    "Volatility_180",
+    "HL_Spread",
+    "Volume_MA_7",
+    "Volume_MA_21",
+    "Volume_MA_60",
+    "Volume_MA_180",
     "Volume_Change",
+    "Target_Return_7",
+    "Target_Return_30",
+    "Target_Return_365",
+    "Target_Up",
 ]
 
 HORIZONS = [7, 30, 90, 180]
@@ -394,7 +417,12 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
         def _lag(arr, k):
             return arr[-k] if len(arr) >= k else arr[0]
 
-        feat = {
+            feat = {
+            "High":           high_series[-1],
+            "Low":            low_series[-1],
+            "Open":           close_series[-1],
+            "Volume":         volume_series[-1],
+
             "Daily_Return":   (close_series[-1] - close_series[-2]) / close_series[-2] if n >= 2 else 0.0,
             "Close_Lag_1":    _lag(close_series, 1),
             "Close_Lag_7":    _lag(close_series, 7),
@@ -411,11 +439,17 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
             "Volatility_60":  _roll_std(close_series, 60),
             "Volatility_180": _roll_std(close_series, 180),
             "HL_Spread":      last_hl,
-            "Volume_MA_7":    np.mean(volume_series[-7:])  if n >= 7  else np.mean(volume_series),
-            "Volume_MA_21":   np.mean(volume_series[-21:]) if n >= 21 else np.mean(volume_series),
-            "Volume_MA_60":   np.mean(volume_series[-60:]) if n >= 60 else np.mean(volume_series),
-            "Volume_MA_180":  np.mean(volume_series[-180:])if n >= 180 else np.mean(volume_series),
+            "Volume_MA_7":    np.mean(volume_series[-7:])   if n >= 7   else np.mean(volume_series),
+            "Volume_MA_21":   np.mean(volume_series[-21:])  if n >= 21  else np.mean(volume_series),
+            "Volume_MA_60":   np.mean(volume_series[-60:])  if n >= 60  else np.mean(volume_series),
+            "Volume_MA_180":  np.mean(volume_series[-180:]) if n >= 180 else np.mean(volume_series),
             "Volume_Change":  (volume_series[-1] - volume_series[-2]) / volume_series[-2] if n >= 2 else 0.0,
+
+            # Approximated target/helper features carried forward for inference compatibility
+            "Target_Return_7":   0.0,
+            "Target_Return_30":  0.0,
+            "Target_Return_365": 0.0,
+            "Target_Up":         0,
         }
 
         row = np.array([[feat[c] for c in FEATURE_COLS]], dtype=np.float32)
