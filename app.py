@@ -237,7 +237,11 @@ FEATURE_COLS = [
 
 HORIZONS = [7, 30, 90, 180]
 SEQ_LEN   = 30     # BiLSTM sequence length
-HIDDEN    = 78     # BiLSTM hidden size
+BTC_HIDDEN = 78
+BTC_LAYERS = 2
+
+BNB_HIDDEN = 107
+BNB_LAYERS = 1    # BiLSTM hidden size
 
 # ─────────────────────────────────────────────
 # BILSTM ARCHITECTURE  (must match saved weights)
@@ -340,12 +344,19 @@ def get_earliest_date(ticker: str) -> str:
 # MODEL LOADING
 # ─────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def load_bilstm_model(model_path: str, input_size: int) -> BiLSTM:
-    """Load a BiLSTM .pth file onto CPU."""
+def load_bilstm_model(model_path: str, input_size: int, hidden_size: int, num_layers: int) -> BiLSTM:
+    """Load a BiLSTM state_dict file onto CPU/GPU."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = BiLSTM(input_size=input_size, hidden_size=HIDDEN, num_layers=2, output_size=1)
-    state = torch.load(model_path, map_location=device, weights_only=True)
+    model = BiLSTM(
+        input_size=input_size,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        output_size=1
+    )
+
+    state = torch.load(model_path, map_location=device)
     model.load_state_dict(state)
+    model.to(device)
     model.eval()
     return model
 
@@ -389,7 +400,15 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
     df = df.dropna(subset=FEATURE_COLS)
 
     input_size = len(FEATURE_COLS)
-    model = load_bilstm_model(model_path, input_size)
+
+    if coin == "Bitcoin":
+       hidden_size = BTC_HIDDEN
+       num_layers = BTC_LAYERS
+    else:
+       hidden_size = BNB_HIDDEN
+       num_layers = BNB_LAYERS
+
+    model = load_bilstm_model(model_path, input_size, hidden_size, num_layers)
     device = next(model.parameters()).device
 
     # Working buffer – we append predicted Close values here
