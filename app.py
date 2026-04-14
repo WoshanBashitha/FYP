@@ -267,13 +267,8 @@ class BiLSTM(nn.Module):
 # FEATURE ENGINEERING  (mirrors feature_engineering.py)
 # ─────────────────────────────────────────────
 def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Replicates the original training-time feature engineering.
-    This version creates all 29 columns expected by the saved models.
-    """
     data = df.copy()
 
-    # Ensure Date is index if present
     if 'Date' in data.columns:
         data.set_index('Date', inplace=True)
 
@@ -288,7 +283,7 @@ def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
     for window in [7, 21, 60, 180]:
         data[f'MA_{window}'] = data['Close'].rolling(window).mean()
 
-    # Volatility (based on Daily_Return, matching your original code)
+    # Volatility
     for window in [7, 21, 60, 180]:
         data[f'Volatility_{window}'] = data['Daily_Return'].rolling(window).std()
 
@@ -300,10 +295,11 @@ def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
         data[f'Volume_MA_{window}'] = data['Volume'].rolling(window).mean()
     data['Volume_Change'] = data['Volume'].pct_change()
 
-    # Target variables (these were used in training, so must exist here too)
-    for period in [7, 30, 365]:
-        data[f'Target_Return_{period}'] = data['Close'].shift(-period) / data['Close'] - 1
-    data['Target_Up'] = (data['Target_Return_7'] > 0).astype(int)
+    # Placeholder columns for inference compatibility
+    data['Target_Return_7'] = 0.0
+    data['Target_Return_30'] = 0.0
+    data['Target_Return_365'] = 0.0
+    data['Target_Up'] = 0
 
     return data
 
