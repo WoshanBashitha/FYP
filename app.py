@@ -608,22 +608,24 @@ def generate_forecast(coin: str, df_raw: pd.DataFrame, horizon: int) -> pd.Serie
 # AI REPORT (Gemini)
 # ─────────────────────────────────────────────
 def generate_ai_report(prompt: str) -> str:
+    """
+    Generate a short AI report using the Gemini API.
+    Returns an empty string if unavailable or rate-limited.
+    """
     try:
         import google.generativeai as genai
 
         try:
             api_key = st.secrets["GEMINI_API_KEY"]
-            st.info("Gemini key found in Streamlit secrets.")
         except Exception:
             api_key = os.environ.get("GEMINI_API_KEY", "")
-            if api_key:
-                st.info("Gemini key found in environment variable.")
-            else:
-                st.error("No GEMINI_API_KEY found in deployed app secrets or environment.")
-                return ""
+
+        if not api_key:
+            return ""
 
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-2.5-flash")
+
         response = model.generate_content(
             f"You are a concise financial analyst. {prompt} "
             "Write a clear, informative paragraph of 80–150 words. "
@@ -633,11 +635,9 @@ def generate_ai_report(prompt: str) -> str:
         if hasattr(response, "text") and response.text:
             return response.text.strip()
 
-        st.error("Gemini returned no text.")
         return ""
 
-    except Exception as e:
-        st.error(f"Gemini error: {e}")
+    except Exception:
         return ""
 # ─────────────────────────────────────────────
 # CHART HELPERS
