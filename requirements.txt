@@ -9,4 +9,4 @@ yfinance
 plotly
 joblib
 xgboost
-google-genai
+google-generativeai

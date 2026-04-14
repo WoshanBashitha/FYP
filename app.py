@@ -407,7 +407,6 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
         # Build a temporary extended series for feature calculation
         n = len(close_series)
 
-        # Compute rolling features manually from close_series
         def _roll_mean(arr, w):
             return np.mean(arr[-w:]) if len(arr) >= w else np.mean(arr)
 
@@ -417,7 +416,7 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
         def _lag(arr, k):
             return arr[-k] if len(arr) >= k else arr[0]
 
-            feat = {
+        feat = {
             "High":           high_series[-1],
             "Low":            low_series[-1],
             "Open":           close_series[-1],
