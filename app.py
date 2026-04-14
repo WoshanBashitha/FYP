@@ -927,8 +927,19 @@ def tab_forecasting():
             fig.add_trace(go.Scatter(x=fc.index, y=fc.values,
                                       name="Forecast",
                                       line=dict(color="#f0b429", width=2, dash="dash")))
-            fig.add_vline(x=str(df_raw.index[-1]), line_dash="dot",
-                          line_color="#8b949e", annotation_text="Today")
+            split_x = df_raw.index[-1]
+            split_y = max(float(recent_actual.max()), float(fc.max()))
+
+            fig.add_vline(x=split_x, line_dash="dot", line_color="#8b949e")
+            fig.add_annotation(
+                    x=split_x,
+                    y=split_y,
+                    text="Today",
+                    showarrow=False,
+                    yshift=10,
+                    font=dict(color="#8b949e")
+            )
+                  
             fig.update_layout(title=f"{coin} — {horizon}-Day Forecast", **DARK_LAYOUT)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -1008,8 +1019,19 @@ def tab_comparison():
             name=f"Next {horizon} Days (Forecast)",
             line=dict(color="#f0b429", width=2, dash="dash")
         ))
-        fig.add_vline(x=str(df_raw.index[-1]), line_dash="dot",
-                      line_color="#8b949e", annotation_text="Today")
+        split_x = df_raw.index[-1]
+        split_y = max(float(past_window.max()), float(fc.max()))
+
+        fig.add_vline(x=split_x, line_dash="dot", line_color="#8b949e")
+        fig.add_annotation(
+                x=split_x,
+                y=split_y, 
+                text="Today",
+                showarrow=False,
+                yshift=10,
+                font=dict(color="#8b949e")
+        )
+
         fig.update_layout(title=f"{coin} — Past {horizon}d vs Forecast {horizon}d", **DARK_LAYOUT)
         st.plotly_chart(fig, use_container_width=True)
 
