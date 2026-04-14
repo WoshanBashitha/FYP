@@ -353,7 +353,7 @@ def recursive_forecast_bilstm(coin: str, df_raw: pd.DataFrame, horizon: int) -> 
         prefix = "bnb"
 
     x_scaler_path = f"{prefix}_final_x_scaler.pkl"
-    y_scaler_path = f"{prefix}_final_Y_scaler.pkl"
+    y_scaler_path = f"{prefix}_final_y_scaler.pkl"
     model_path    = COINS[coin]["model_file"]
 
     x_scaler = load_scaler(x_scaler_path)
