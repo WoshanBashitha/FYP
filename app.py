@@ -498,6 +498,8 @@ def recursive_forecast_xgboost(coin: str, df_raw: pd.DataFrame, horizon: int) ->
     df = df.dropna(subset=FEATURE_COLS)
 
     close_series  = list(df["Close"].values)
+    high_series = list(df["High"].values)
+    low_series = list(df["Low"].values)
     volume_series = list(df["Volume"].values)
     last_hl  = df["HL_Spread"].iloc[-1]
     last_vol = df["Volume"].iloc[-1]
@@ -518,27 +520,40 @@ def recursive_forecast_xgboost(coin: str, df_raw: pd.DataFrame, horizon: int) ->
             return arr[-k] if len(arr) >= k else arr[0]
 
         feat = {
-            "Daily_Return":   (close_series[-1] - close_series[-2]) / close_series[-2] if n >= 2 else 0.0,
-            "Close_Lag_1":    _lag(close_series, 1),
-            "Close_Lag_7":    _lag(close_series, 7),
-            "Close_Lag_14":   _lag(close_series, 14),
-            "Close_Lag_30":   _lag(close_series, 30),
-            "Close_Lag_90":   _lag(close_series, 90),
-            "Close_Lag_180":  _lag(close_series, 180),
-            "MA_7":           _roll_mean(close_series, 7),
-            "MA_21":          _roll_mean(close_series, 21),
-            "MA_60":          _roll_mean(close_series, 60),
-            "MA_180":         _roll_mean(close_series, 180),
-            "Volatility_7":   _roll_std(close_series, 7),
-            "Volatility_21":  _roll_std(close_series, 21),
-            "Volatility_60":  _roll_std(close_series, 60),
+            "High": high_series[-1],
+            "Low": low_series[-1],
+            "Open": close_series[-1],
+            "Volume": volume_series[-1],
+
+            "Daily_Return": (close_series[-1] - close_series[-2]) / close_series[-2] if n >= 2 else 0.0,
+            "Close_Lag_1": _lag(close_series, 1),
+            "Close_Lag_7": _lag(close_series, 7),
+            "Close_Lag_14": _lag(close_series, 14),
+            "Close_Lag_30": _lag(close_series, 30),
+            "Close_Lag_90": _lag(close_series, 90),
+            "Close_Lag_180": _lag(close_series, 180),
+
+            "MA_7": _roll_mean(close_series, 7),
+            "MA_21": _roll_mean(close_series, 21),
+            "MA_60": _roll_mean(close_series, 60),
+            "MA_180": _roll_mean(close_series, 180),
+
+            "Volatility_7": _roll_std(close_series, 7),
+            "Volatility_21": _roll_std(close_series, 21),
+            "Volatility_60": _roll_std(close_series, 60),
             "Volatility_180": _roll_std(close_series, 180),
-            "HL_Spread":      last_hl,
-            "Volume_MA_7":    np.mean(volume_series[-7:])   if n >= 7   else np.mean(volume_series),
-            "Volume_MA_21":   np.mean(volume_series[-21:])  if n >= 21  else np.mean(volume_series),
-            "Volume_MA_60":   np.mean(volume_series[-60:])  if n >= 60  else np.mean(volume_series),
-            "Volume_MA_180":  np.mean(volume_series[-180:]) if n >= 180 else np.mean(volume_series),
-            "Volume_Change":  (volume_series[-1] - volume_series[-2]) / volume_series[-2] if n >= 2 else 0.0,
+
+            "HL_Spread": last_hl,
+            "Volume_MA_7": np.mean(volume_series[-7:]) if n >= 7 else np.mean(volume_series),
+            "Volume_MA_21": np.mean(volume_series[-21:]) if n >= 21 else np.mean(volume_series),
+            "Volume_MA_60": np.mean(volume_series[-60:]) if n >= 60 else np.mean(volume_series),
+            "Volume_MA_180": np.mean(volume_series[-180:]) if n >= 180 else np.mean(volume_series),
+            "Volume_Change": (volume_series[-1] - volume_series[-2]) / volume_series[-2] if n >= 2 and volume_series[-2] != 0 else 0.0,
+
+            "Target_Return_7": 0.0,
+            "Target_Return_30": 0.0,
+            "Target_Return_365": 0.0,
+            "Target_Up": 0,
         }
 
         row = np.array([[feat[c] for c in FEATURE_COLS]])
