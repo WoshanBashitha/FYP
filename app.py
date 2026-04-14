@@ -17,6 +17,7 @@ import yfinance as yf
 import pickle
 import os
 import warnings
+import joblib
 from datetime import datetime, timedelta
 
 import plotly.graph_objects as go
@@ -326,16 +327,14 @@ def load_bilstm_model(model_path: str, input_size: int) -> BiLSTM:
 
 @st.cache_resource(show_spinner=False)
 def load_xgboost_model(model_path: str):
-    """Load an XGBoost .pkl file."""
-    with open(model_path, "rb") as f:
-        return pickle.load(f)
+    """Load an XGBoost .pkl file saved with joblib."""
+    return joblib.load(model_path)
 
 
 @st.cache_resource(show_spinner=False)
 def load_scaler(scaler_path: str):
-    """Load a sklearn scaler .pkl file."""
-    with open(scaler_path, "rb") as f:
-        return pickle.load(f)
+    """Load a scaler .pkl file saved with joblib."""
+    return joblib.load(scaler_path)
 
 # ─────────────────────────────────────────────
 # FORECASTING LOGIC
