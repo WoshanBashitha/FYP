@@ -268,38 +268,44 @@ class BiLSTM(nn.Module):
 # ─────────────────────────────────────────────
 def calculate_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Replicates the calculate_features() function from feature_engineering.py.
-    Computes all 21 engineered features used by every model.
+    Replicates the original training-time feature engineering.
+    This version creates all 29 columns expected by the saved models.
     """
-    df = df.copy().sort_index()
+    data = df.copy()
 
-    df["Daily_Return"]  = df["Close"].pct_change()
-    df["Close_Lag_1"]   = df["Close"].shift(1)
-    df["Close_Lag_7"]   = df["Close"].shift(7)
-    df["Close_Lag_14"]  = df["Close"].shift(14)
-    df["Close_Lag_30"]  = df["Close"].shift(30)
-    df["Close_Lag_90"]  = df["Close"].shift(90)
-    df["Close_Lag_180"] = df["Close"].shift(180)
+    # Ensure Date is index if present
+    if 'Date' in data.columns:
+        data.set_index('Date', inplace=True)
 
-    df["MA_7"]   = df["Close"].rolling(7).mean()
-    df["MA_21"]  = df["Close"].rolling(21).mean()
-    df["MA_60"]  = df["Close"].rolling(60).mean()
-    df["MA_180"] = df["Close"].rolling(180).mean()
+    data.sort_index(inplace=True)
 
-    df["Volatility_7"]   = df["Close"].rolling(7).std()
-    df["Volatility_21"]  = df["Close"].rolling(21).std()
-    df["Volatility_60"]  = df["Close"].rolling(60).std()
-    df["Volatility_180"] = df["Close"].rolling(180).std()
+    # Price-based features
+    data['Daily_Return'] = data['Close'].pct_change()
+    for lag in [1, 7, 14, 30, 90, 180]:
+        data[f'Close_Lag_{lag}'] = data['Close'].shift(lag)
 
-    df["HL_Spread"] = df["High"] - df["Low"]
+    # Moving averages
+    for window in [7, 21, 60, 180]:
+        data[f'MA_{window}'] = data['Close'].rolling(window).mean()
 
-    df["Volume_MA_7"]   = df["Volume"].rolling(7).mean()
-    df["Volume_MA_21"]  = df["Volume"].rolling(21).mean()
-    df["Volume_MA_60"]  = df["Volume"].rolling(60).mean()
-    df["Volume_MA_180"] = df["Volume"].rolling(180).mean()
-    df["Volume_Change"] = df["Volume"].pct_change()
+    # Volatility (based on Daily_Return, matching your original code)
+    for window in [7, 21, 60, 180]:
+        data[f'Volatility_{window}'] = data['Daily_Return'].rolling(window).std()
 
-    return df
+    # High-Low spread
+    data['HL_Spread'] = data['High'] - data['Low']
+
+    # Volume-based features
+    for window in [7, 21, 60, 180]:
+        data[f'Volume_MA_{window}'] = data['Volume'].rolling(window).mean()
+    data['Volume_Change'] = data['Volume'].pct_change()
+
+    # Target variables (these were used in training, so must exist here too)
+    for period in [7, 30, 365]:
+        data[f'Target_Return_{period}'] = data['Close'].shift(-period) / data['Close'] - 1
+    data['Target_Up'] = (data['Target_Return_7'] > 0).astype(int)
+
+    return data
 
 # ─────────────────────────────────────────────
 # DATA LOADING
